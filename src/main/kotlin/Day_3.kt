@@ -54,16 +54,16 @@ private fun calculateCo2(inList: List<String>): String {
     return inputList[0]
 }
 
-fun calculateResult(sampleData: List<String>): HelperClass {
-    val helper = HelperClass()
+fun calculateResult(sampleData: List<String>): BinaryParser {
+    val parser = BinaryParser()
 
     sampleData.filter { it.isNotEmpty() }
         .map { word -> word.split("").filter { it.isNotBlank() } }
         .forEach {
-            it.forEachIndexed { index, s -> helper.putValue(index, s) }
+            it.forEachIndexed { index, s -> parser.putValue(index, s) }
         }
 
-    return helper
+    return parser
 }
 
 fun getList(list: List<String>, searchingValue: Char, index: Int): List<String> {
@@ -110,7 +110,7 @@ data class CounterClass(val zeros: Int, val ones: Int) {
     }
 }
 
-class HelperClass() {
+class BinaryParser() {
     private val map = mutableMapOf<Int, CounterClass>()
 
     fun putValue(index: Int, value: String) {
