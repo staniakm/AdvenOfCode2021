@@ -1,22 +1,25 @@
 import kotlin.math.max
 
 fun main() {
-    day5SampleData()
+    val calculateOverlapsVents = day5SampleData()
         .map { mapToPoints(it) }
         .filter { it.pointsInLine() }
         .onEach { it.drawLine() }
         .let {
             Map().convertToMap(it)
-        }.drawMap()
-
+        }.calculateOverlapsVents()
+    println("number of overlap vents:  $calculateOverlapsVents")
+    check(calculateOverlapsVents == 6113)
 
     //part 2
-    day5SampleData()
+    val calculateOverlapsVents1 = day5SampleData()
         .map { mapToPoints(it) }
         .onEach { it.drawLineWithDiagonal() }
         .let {
             Map().convertToMap(it)
-        }.drawMap()
+        }.calculateOverlapsVents()
+    println("Number of overlaps vents: $calculateOverlapsVents1")
+    check(calculateOverlapsVents1 == 20373)
 }
 
 class Map() {
@@ -38,27 +41,20 @@ class Map() {
         line.forEach {
             addPoint(it)
         }
-
     }
 
     private fun addPoint(it: Point) {
-        val value = map.getOrDefault(it, 0)
-        map[it] = value + 1
+        map[it] = map.getOrDefault(it, 0) + 1
     }
 
-    fun drawMap() {
-        var countOverlapVents = 0
-        for (h in 0..y) {
-            for (v in 0..x) {
-                val nrOfVents = map.getOrDefault(Point(v, h), 0)
-                if (nrOfVents > 1) {
-                    countOverlapVents++
-                }
+    fun calculateOverlapsVents(): Int {
+        return (0..y)
+            .sumOf { h ->
+                (0..x)
+                    .map { map.getOrDefault(Point(it, h), 0) }
+                    .count { it > 1 }
             }
-        }
-        println("\nNumber of overlap vents: $countOverlapVents")
     }
-
 }
 
 fun mapToPoints(input: String): Coordinates {
@@ -72,56 +68,53 @@ fun mapToPoints(input: String): Coordinates {
 }
 
 data class Coordinates(val startPoint: Point, val endPoint: Point) {
-    private val line = mutableListOf<Point>()
+    private val pointsBetween = mutableListOf<Point>()
 
     fun pointsInLine(): Boolean {
         return startPoint.isInLineWith(endPoint)
     }
 
     fun drawLine() {
-        if (startPoint.x == endPoint.x) {
-            drawHorizontalLine()
-        } else if (startPoint.y == endPoint.y) {
-            drawVerticalLine()
-        }
+        draw(false).let { pointsBetween.addAll(it) }
     }
 
     fun drawLineWithDiagonal() {
-        if (startPoint.x == endPoint.x) {
+        draw(true).let { pointsBetween.addAll(it) }
+    }
+
+    private fun draw(withDiagonal: Boolean): List<Point> {
+        return if (startPoint.x == endPoint.x) {
             drawHorizontalLine()
         } else if (startPoint.y == endPoint.y) {
             drawVerticalLine()
         } else {
-            drawDiagonalLine()
+            if (withDiagonal) drawDiagonalLine() else listOf()
         }
     }
 
-    private fun drawDiagonalLine() {
+    private fun drawDiagonalLine(): List<Point> {
         val startPointX: Point = if (startPoint.x < endPoint.x) startPoint else endPoint
         val endpoint = if (startPoint.x > endPoint.x) startPoint else endPoint
         val progression = if (startPointX.y > endpoint.y) -1 else 1
-        line.add(Point(startPointX.x, startPointX.y))
-        var counter = 1
-        while (!line.contains(endpoint)) {
-            line.add(Point(startPointX.x + counter, startPointX.y +  (counter * progression)))
-            counter++
-        }
+        return (0..(endpoint.x - startPointX.x))
+            .map {
+                Point(startPointX.x + it, startPointX.y + (it * progression))
+            }
     }
 
-    private fun drawHorizontalLine() {
+    private fun drawHorizontalLine(): List<Point> {
         val start = if (endPoint.y > startPoint.y) startPoint.y else endPoint.y
         val endPoint = if (endPoint.y < startPoint.y) startPoint.y else endPoint.y
-        for (y in start..endPoint) {
-            line.add(Point(startPoint.x, y))
-        }
+        return (start..endPoint)
+            .map { Point(startPoint.x, it) }
     }
 
-    private fun drawVerticalLine() {
+    private fun drawVerticalLine(): List<Point> {
         val start = if (endPoint.x > startPoint.x) startPoint.x else endPoint.x
         val endPoint = if (endPoint.x < startPoint.x) startPoint.x else endPoint.x
-        for (x in start..endPoint) {
-            line.add(Point(x, startPoint.y))
-        }
+        return (start..endPoint)
+            .map { Point(it, startPoint.y) }
+
     }
 
     fun getGreatestX(): Int {
@@ -133,7 +126,7 @@ data class Coordinates(val startPoint: Point, val endPoint: Point) {
     }
 
     fun getLine(): List<Point> {
-        return line
+        return pointsBetween
     }
 }
 
