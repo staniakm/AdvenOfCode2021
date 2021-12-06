@@ -1,12 +1,13 @@
 fun main() {
     val result1 = day1sampleData().map { it.toInt() }.sumup()
     println(result1)
-
+check(1466==result1)
     val result2 = day1sampleData().map { it.toInt() }
         .windowed(3, 1)
         .map { it.sum() }
         .sumup()
     println(result2)
+    check(1491==result1)
 }
 
 fun List<Int>.sumup() = this.windowed(2, 1)

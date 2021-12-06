@@ -5,6 +5,9 @@ fun main() {
         data.split(",").map { it.toInt() }
     }
     val map: Map<Int, Int> = initialData.groupingBy { it }.eachCount()
+    //part1
+    println(simulateColony(80, map))
+    //part1
     println(simulateColony(256, map))
 
 }

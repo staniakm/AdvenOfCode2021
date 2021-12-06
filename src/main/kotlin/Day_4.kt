@@ -1,5 +1,5 @@
 fun main() {
-    val bingo: Bingo = loadBingo(day4SampleData().first())
+    val bingo: List<Int> = parseNumbers(day4SampleData().first())
     val boards: List<Board> = day4SampleData().filter { it.isNotBlank() }.drop(1)
         .windowed(5, 5)
         .map {
@@ -7,51 +7,48 @@ fun main() {
         }
 
     val result = playFirstWon(bingo, boards)
-    println(result)
+    println("first won: $result")
+    check(16716 == result)
 
     val lastWonResult = playLastWon(bingo, boards)
-    println(lastWonResult)
+    println("Last won: $lastWonResult")
+    check(4880 == lastWonResult)
 }
 
-private fun playFirstWon(bingo: Bingo, boards: List<Board>): Int {
-    for (number in bingo.numbers) {
-        boards.filter { it.notWonYet() }
-            .forEach {
-                val isBingo = it.isBingo(number)
-                if (isBingo) {
-                    return it.calculateResult(number)
+private fun playFirstWon(bingo: List<Int>, boards: List<Board>): Int {
+
+    return bingo
+        .asSequence()
+        .filter { _ -> boards.any { !it.won() } }
+        .map { number ->
+            boards.filter { it.notWonYet() }
+                .filter { it.isBingo(number) }
+                .map {
+                    it.calculateResult(number)
                 }
-            }
-    }
-    return 0
+        }
+        .first { it.isNotEmpty() }
+        .first()
 }
 
-private fun playLastWon(bingo: Bingo, boards: List<Board>): Int {
-    var lastWonBoard: Board? = null
-    var lastNumber = bingo.numbers.first()
-    for (number in bingo.numbers) {
-        boards.filter { it.notWonYet() }
-            .forEach {
-                val isBingo = it.isBingo(number)
-                if (isBingo) {
-                    lastWonBoard = it
-                    lastNumber = number
+private fun playLastWon(bingo: List<Int>, boards: List<Board>): Int {
+    return bingo
+        .map { number ->
+            boards.filter { it.notWonYet() }
+                .filter { it.isBingo(number) }
+                .map {
+                    it.calculateResult(number)
                 }
-            }
-    }
-    return lastWonBoard?.calculateResult(lastNumber) ?: throw NullPointerException("Expression 'lastWonBoard' must not be null")
+        }.last { it.isNotEmpty() }
+        .last ()
 }
 
-fun loadBingo(bingoNumbers: String): Bingo {
-    return Bingo(bingoNumbers)
+fun parseNumbers(input: String): List<Int> {
+    return input.split(",").filter { it.isNotBlank() }.map { it.toInt() }
 }
 
 fun loadBoard(boardData: List<String>): Board {
     return Board().parseInputData(boardData)
-}
-
-data class Bingo(val input: String) {
-    val numbers: List<Int> = input.split(",").filter { it.isNotBlank() }.map { it.toInt() }
 }
 
 class Board() {
@@ -117,6 +114,7 @@ class Board() {
     }
 
     fun notWonYet(): Boolean = !alreadyWon
+    fun won() = alreadyWon
 }
 
 data class BoardRow(val row: List<BoardPosition>) {
