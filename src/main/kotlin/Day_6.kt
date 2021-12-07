@@ -24,7 +24,7 @@ data class Colony(
     val age8: Long
 ) {
     fun sum(): Long {
-        return (age0 + age1 + age2 + age3 + age4 + age5 + age6 + age7 + age8).toLong()
+        return (age0 + age1 + age2 + age3 + age4 + age5 + age6 + age7 + age8)
     }
 
     fun nextDay(): Colony {

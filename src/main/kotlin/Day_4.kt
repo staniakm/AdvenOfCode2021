@@ -19,7 +19,7 @@ private fun playFirstWon(bingo: List<Int>, boards: List<Board>): Int {
 
     return bingo
         .asSequence()
-        .filter { _ -> boards.any { !it.won() } }
+        .takeWhile { _ -> boards.any { !it.won() } }
         .map { number ->
             boards.filter { it.notWonYet() }
                 .filter { it.isBingo(number) }
