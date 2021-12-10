@@ -7,7 +7,7 @@ check(1466==result1)
         .map { it.sum() }
         .sumup()
     println(result2)
-    check(1491==result1)
+    check(1491==result2)
 }
 
 fun List<Int>.sumup() = this.windowed(2, 1)
