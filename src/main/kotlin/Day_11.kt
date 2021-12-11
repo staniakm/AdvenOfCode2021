@@ -11,13 +11,15 @@ fun part2() {
     generateSequence(1) { it + 1 }
         .asSequence().forEach { step ->
             (matrix.indices).forEach { nr ->
-                matrix[nr].forEachIndexed { _, o ->
-                    o.increaseEnergy()
+                matrix[nr].forEachIndexed { index, o ->
+                    matrix[nr][index] = o.increaseEnergy()
                 }
             }
             (matrix.indices).forEach { nr ->
                 matrix[nr].forEachIndexed { idx, o ->
-                    if (o.isFlashing()) {
+                    val flashing = o.isFlashing()
+                    matrix[nr][idx] = flashing.first
+                    if (flashing.second) {
                         increaseEnergyOfSurrounding(matrix, nr, idx)
                     }
                 }
@@ -38,13 +40,16 @@ fun part1() {
     val matrix: Array<Array<Octopus>> = getOctopusArray()
     (1..100).forEach { _ ->
         (matrix.indices).forEach { nr ->
-            matrix[nr].forEachIndexed { _, o ->
-                o.increaseEnergy()
+            matrix[nr].forEachIndexed { idx, o ->
+                val octopus = o.increaseEnergy()
+                matrix[nr][idx] = octopus
             }
         }
         (matrix.indices).forEach { nr ->
             matrix[nr].forEachIndexed { idx, o ->
-                if (o.isFlashing()) {
+                val oct = o.isFlashing()
+                matrix[nr][idx] = oct.first
+                if (oct.second) {
                     increaseEnergyOfSurrounding(matrix, nr, idx)
                 }
             }
@@ -65,14 +70,13 @@ fun increaseEnergyOfSurrounding(matrix: Array<Array<Octopus>>, arrayNr: Int, idx
         .filter { row -> row >= 0 && row <= matrix.size - 1 }
         .forEach { row ->
             (idx - 1..idx + 1)
+                .asSequence()
                 .filter { pos -> isNotOutOfRow(pos, matrix, row) }
                 .filter { pos -> isNotTheseSamePoint(row, arrayNr, pos, idx) }
                 .forEach { pos ->
-                    matrix[row][pos].apply {
-                        increaseEnergyByFlash()
-                    }.also {
-                        if (it.isFlashing()) increaseEnergyOfSurrounding(matrix, row, pos)
-                    }
+                    val octopus = matrix[row][pos].increaseEnergyByFlash().isFlashing()
+                    matrix[row][pos] = octopus.first
+                    if (octopus.second) increaseEnergyOfSurrounding(matrix, row, pos)
                 }
         }
 }
@@ -91,25 +95,21 @@ private fun isNotTheseSamePoint(
 ) = !(row == arrayNr && pos == idx)
 
 
-data class Octopus(var currentEnergy: Int, var numberOfFlashes: Int = 0) {
-    private var alreadyFlashed = false
-    fun increaseEnergy() {
-        alreadyFlashed = false
-        currentEnergy++
+data class Octopus(val currentEnergy: Int, val numberOfFlashes: Int = 0, val alreadyFlashed: Boolean = false) {
+    fun increaseEnergy(): Octopus {
+        return this.copy(currentEnergy = currentEnergy + 1, alreadyFlashed = false)
     }
 
-    fun increaseEnergyByFlash() {
+    fun increaseEnergyByFlash(): Octopus {
         if (!alreadyFlashed)
-            currentEnergy++
+            return this.copy(currentEnergy = currentEnergy + 1)
+        return this
     }
 
-    fun isFlashing(): Boolean {
+    fun isFlashing(): Pair<Octopus, Boolean> {
         return if (currentEnergy >= 10) {
-            numberOfFlashes++
-            currentEnergy = 0
-            alreadyFlashed = true
-            true
-        } else false
+            Pair(this.copy(currentEnergy = 0, numberOfFlashes = this.numberOfFlashes + 1, alreadyFlashed = true), true)
+        } else Pair(this, false)
     }
 
     override fun toString(): String {
