@@ -1,15 +1,12 @@
 fun main() {
-
-
     part1()
     part2()
-
 }
 
 fun part2() {
     val matrix: Array<Array<Octopus>> = getOctopusArray()
     generateSequence(1) { it + 1 }
-        .asSequence().forEach { step ->
+        .forEach { step ->
             (matrix.indices).forEach { nr ->
                 matrix[nr].forEachIndexed { index, o ->
                     matrix[nr][index] = o.increaseEnergy()
@@ -38,7 +35,7 @@ fun part2() {
 
 fun part1() {
     val matrix: Array<Array<Octopus>> = getOctopusArray()
-    (1..100).forEach { _ ->
+    repeat(100) { _ ->
         (matrix.indices).forEach { nr ->
             matrix[nr].forEachIndexed { idx, o ->
                 val octopus = o.increaseEnergy()
